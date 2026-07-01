@@ -4,6 +4,12 @@
 #include <vector>
 #include <cmath>
 
+
+bool rightAssociativity(std::string input){
+   
+  return input=="^";
+}
+
 int Precedence(std::string input)
 {
   if (input == "-")
@@ -84,7 +90,7 @@ std::vector<std::string> stringParser(std::string Input)
 
         else
         {
-          while (Precedence(symbols) <= Precedence(Operator.top()))
+          while (Precedence(symbols) <= Precedence(Operator.top()) && !rightAssociativity(symbols))
           {
             Output.push_back(Operator.top());
             Operator.pop();
