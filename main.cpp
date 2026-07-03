@@ -3,12 +3,22 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <stdexcept>
 
+bool rightAssociativity(std::string input)
+{
 
-bool rightAssociativity(std::string input){
-   
-  return input=="^";
+  return input == "^";
 }
+
+/* bool UnaryMinus(std::vector<std::string> Output, std::stack<std::string> Operator)
+{
+  if (Output.size() <= Operator.size())
+  {
+    return true;
+  }
+  return false;
+} */
 
 int Precedence(std::string input)
 {
@@ -40,10 +50,12 @@ int Precedence(std::string input)
 }
 
 std::vector<std::string> stringParser(std::string Input)
-{
 
+{
   std::string digits = "";
   std::string symbols = "";
+  int operatorCount=0;
+  
   std::vector<std::string> Output;
   std::stack<std::string> Operator;
 
@@ -58,19 +70,23 @@ std::vector<std::string> stringParser(std::string Input)
     {
       if (digits != "") // dont push the flushed digit into output.
       {
+        {
         Output.push_back(digits);
+        }
         digits = "";
       }
 
       symbols = Input[i];
       if (symbols == "(")
       {
+    
         Operator.push(symbols);
         continue;
       }
 
       if (symbols == ")")
       {
+      
         while (Operator.top() != "(")
         {
           Output.push_back(Operator.top());
@@ -82,6 +98,16 @@ std::vector<std::string> stringParser(std::string Input)
 
       if (symbols == "+" || symbols == "-" || symbols == "/" || symbols == "*" || symbols == "^")
       {
+        operatorCount+=1;
+        if (symbols == "-")
+        {
+          if (Output.empty() || Operator.top() == "("||!Operator.empty() && operatorCount>=Output.size())
+          {
+            digits = "-" + digits;
+            continue;
+          }
+        }
+
         if (Operator.empty() || !Operator.empty() && Precedence(symbols) > Precedence(Operator.top()))
 
         {
@@ -112,11 +138,17 @@ std::vector<std::string> stringParser(std::string Input)
     Operator.pop();
   }
 
+
   /* for (std::string &val : Output)
   {
     std::cout << val << std::endl;
   } */
 
+  for (std::string &str : Output)
+  {
+    std::cout << str << std::endl;
+  }
+  
   return Output;
 }
 
@@ -129,10 +161,11 @@ int main()
   std::string Input;
 
   getline(std::cin, Input, '=');
-  
+
   Output = stringParser(Input);
-  
+
   int prev = -2;
+
   for (int i = 0; i < Output.size(); i++)
   {
     if (Output[i] == " ")
@@ -140,8 +173,17 @@ int main()
 
     if (Output[i] != "/" && Output[i] != "*" && Output[i] != "+" && Output[i] != "-" && Output[i] != "^")
     {
-      ans.push_back(std::stoi(Output[i]));
-      prev++;
+      try
+      { // this is a classic incorrect arguement data
+        ans.push_back(std::stoi(Output[i]));
+        prev++;
+        /* std::logic_error("foo"); */
+      }
+      catch (const std::invalid_argument &e)
+      {
+        std::cerr << "Invalid character used" << std::endl;
+        return -1;
+      }
     }
 
     float item;
@@ -185,10 +227,9 @@ int main()
       item = 0;
     }
 
-
     if (Output[i] == "^")
     {
-      item = pow(ans[prev],ans.back());
+      item = pow(ans[prev], ans.back());
       ans.pop_back();
       ans.pop_back();
       ans.push_back(item);
@@ -196,8 +237,8 @@ int main()
       item = 0;
     }
   }
-  
-  std::cout<<"answer is"<<std::endl;
+
+  std::cout << "answer is" << std::endl;
   std::cout << ans[0] << std::endl;
 
   return 0;
