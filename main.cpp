@@ -49,13 +49,102 @@ int Precedence(std::string input)
   return -1;
 }
 
+int eval(std::vector<std::string> Output)
+{
+  std::vector<float> ans;
+  int prev = -2;
+
+  for (int i = 0; i < Output.size(); i++)
+  {
+    if (Output[i] == " ")
+      continue;
+
+    if (Output[i] != "/" && Output[i] != "*" && Output[i] != "+" && Output[i] != "-" && Output[i] != "^")
+    {
+      try
+      { // this is a classic incorrect arguement data
+        ans.push_back(std::stoi(Output[i]));
+        prev++;
+        /* std::logic_error("foo"); */
+      }
+      catch (const std::invalid_argument &e)
+      {
+        std::cerr << "Invalid character used" << std::endl;
+        return -1;
+      }
+    }
+
+    else
+    {
+
+      float item;
+
+      if (Output[i] == "+")
+      {
+        item = ans[prev] + ans.back();
+        ans.pop_back();
+        ans.pop_back();
+        ans.push_back(item);
+        prev--;
+        item = 0;
+      }
+
+      if (Output[i] == "-")
+      {
+        item = ans[prev] - ans.back();
+        ans.pop_back();
+        ans.pop_back();
+        ans.push_back(item);
+        prev--;
+        item = 0;
+      }
+
+      if (Output[i] == "*")
+      {
+        item = ans[prev] * ans.back();
+        ans.pop_back();
+        ans.pop_back();
+        ans.push_back(item);
+        prev--;
+        item = 0;
+      }
+
+      if (Output[i] == "/")
+      {
+        item = ans[prev] / ans.back();
+        ans.pop_back();
+        ans.pop_back();
+        ans.push_back(item);
+        prev--;
+        item = 0;
+      }
+
+      if (Output[i] == "^")
+      {
+        item = pow(ans[prev], ans.back());
+        ans.pop_back();
+        ans.pop_back();
+        ans.push_back(item);
+        prev--;
+        item = 0;
+      }
+    }
+  }
+
+  std::cout << "answer is" << std::endl;
+  std::cout << ans[0] << std::endl;
+  return 0;
+}
+
 std::vector<std::string> stringParser(std::string Input)
 
 {
+
   std::string digits = "";
   std::string symbols = "";
-  int operatorCount=0;
-  
+  int operatorCount = 0;
+  std::string errStatus = "";
+
   std::vector<std::string> Output;
   std::stack<std::string> Operator;
 
@@ -68,10 +157,11 @@ std::vector<std::string> stringParser(std::string Input)
 
     else
     {
+
       if (digits != "") // dont push the flushed digit into output.
       {
         {
-        Output.push_back(digits);
+          Output.push_back(digits);
         }
         digits = "";
       }
@@ -79,14 +169,25 @@ std::vector<std::string> stringParser(std::string Input)
       symbols = Input[i];
       if (symbols == "(")
       {
-    
+        /*  if(Output.back()=="-") */
+        if (!Output.empty() && Operator.empty())
+        {
+          std::cout << "err" << std::endl;
+          if (errStatus == "")
+          {
+            std::cout << "invalid sequence of operators" << std::endl;
+            errStatus = "-1";
+          }
+          else
+            continue;
+        }
         Operator.push(symbols);
         continue;
       }
 
       if (symbols == ")")
       {
-      
+
         while (Operator.top() != "(")
         {
           Output.push_back(Operator.top());
@@ -98,15 +199,40 @@ std::vector<std::string> stringParser(std::string Input)
 
       if (symbols == "+" || symbols == "-" || symbols == "/" || symbols == "*" || symbols == "^")
       {
-        operatorCount+=1;
-        if (symbols == "-")
+
+        
+
+        if (symbols == "-" && !Operator.empty())
         {
-          if (Output.empty() || Operator.top() == "("||!Operator.empty() && operatorCount>=Output.size())
+          if (Operator.top() == "(")
           {
-            digits = "-" + digits;
+            digits += "-";
             continue;
           }
         }
+
+        if (symbols == "-" && Output.empty())
+        {
+          digits += "-";
+          continue;
+        }
+
+        operatorCount += 1;
+
+        if (operatorCount > Output.size() && Input[i] != '-')
+        {
+          if (errStatus == "")
+          {
+            std::cout << "invalid sequence of operators" << std::endl;
+            errStatus = "-1";
+          }
+          else
+            continue;
+        }
+
+        
+
+        
 
         if (Operator.empty() || !Operator.empty() && Precedence(symbols) > Precedence(Operator.top()))
 
@@ -138,17 +264,12 @@ std::vector<std::string> stringParser(std::string Input)
     Operator.pop();
   }
 
-
-  /* for (std::string &val : Output)
+  for (std::string &val : Output)
   {
     std::cout << val << std::endl;
-  } */
-
-  for (std::string &str : Output)
-  {
-    std::cout << str << std::endl;
   }
-  
+  Output.push_back(errStatus);
+  /* 3-2*/
   return Output;
 }
 
@@ -156,7 +277,7 @@ int main()
 {
   std::cout << "Enter your calculations" << std::endl;
   std::cout << "Please end your calculation with =" << std::endl;
-  std::vector<float> ans;
+
   std::vector<std::string> Output;
   std::string Input;
 
@@ -164,82 +285,14 @@ int main()
 
   Output = stringParser(Input);
 
-  int prev = -2;
-
-  for (int i = 0; i < Output.size(); i++)
+  if (Output.back() == "-1")
   {
-    if (Output[i] == " ")
-      continue;
-
-    if (Output[i] != "/" && Output[i] != "*" && Output[i] != "+" && Output[i] != "-" && Output[i] != "^")
-    {
-      try
-      { // this is a classic incorrect arguement data
-        ans.push_back(std::stoi(Output[i]));
-        prev++;
-        /* std::logic_error("foo"); */
-      }
-      catch (const std::invalid_argument &e)
-      {
-        std::cerr << "Invalid character used" << std::endl;
-        return -1;
-      }
-    }
-
-    float item;
-    if (Output[i] == "+")
-    {
-      item = ans[prev] + ans.back();
-      ans.pop_back();
-      ans.pop_back();
-      ans.push_back(item);
-      prev--;
-      item = 0;
-    }
-
-    if (Output[i] == "-")
-    {
-      item = ans[prev] - ans.back();
-      ans.pop_back();
-      ans.pop_back();
-      ans.push_back(item);
-      prev--;
-      item = 0;
-    }
-
-    if (Output[i] == "*")
-    {
-      item = ans[prev] * ans.back();
-      ans.pop_back();
-      ans.pop_back();
-      ans.push_back(item);
-      prev--;
-      item = 0;
-    }
-
-    if (Output[i] == "/")
-    {
-      item = ans[prev] / ans.back();
-      ans.pop_back();
-      ans.pop_back();
-      ans.push_back(item);
-      prev--;
-      item = 0;
-    }
-
-    if (Output[i] == "^")
-    {
-      item = pow(ans[prev], ans.back());
-      ans.pop_back();
-      ans.pop_back();
-      ans.push_back(item);
-      prev--;
-      item = 0;
-    }
+    return -1;
   }
+  else
+    Output.pop_back();
 
-  std::cout << "answer is" << std::endl;
-  std::cout << ans[0] << std::endl;
+  eval(Output);
 
   return 0;
 }
