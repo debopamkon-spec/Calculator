@@ -2,7 +2,7 @@
 
  This is a basic mathematical parsing calculator that can perform five different types of operation, (addition/multiplication) (substraction/division) and (exponent).
 
- Currently,it does not feature unary negative operation or complex operations.
+ Currently,it does not feature complex operations.
 
 
  To use it,
